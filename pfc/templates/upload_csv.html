@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+    <script src= "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"> </script> 
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/r/dt/jq-2.1.4,jszip-2.5.0,pdfmake-0.1.18,dt-1.10.9,af-2.0.0,b-1.0.3,b-colvis-1.0.3,b-html5-1.0.3,b-print-1.0.3,se-1.0.1/datatables.min.css"/>
+    <script type="text/javascript" src="https://cdn.datatables.net/r/dt/jq-2.1.4,jszip-2.5.0,pdfmake-0.1.18,dt-1.10.9,af-2.0.0,b-1.0.3,b-colvis-1.0.3,b-html5-1.0.3,b-print-1.0.3,se-1.0.1/datatables.min.js"></script>
+
+
+    <script src ="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src ="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+
+
+
+
+   
+
+    <script type="text/javascript" src = "https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script type="text/javascript" src = "https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src = "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script type="text/javascript" src = "https://cdn.datatables.net/buttons/1.7.0/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src = "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script type="text/javascript" src = "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.7.0/js/buttons.html5.min.js"></script>
+
+
+
+
+                
+    <meta charset="UTF-8">
+    <title>Read Input</title>
+
+   
+</head>
+<body>
+    <label>Upload a file</label>
+    {% csrf_token %}
+    <input type="file" id="fileUpload" name="file"><br>
+    <form method="POST">
+    <label> Year to be forward </label>
+    <input type="number" id="Year_to_be_forward" name="fyear"/><br>
+    <label> For the Year  </label>
+    <input type="number" id="For_the_year" name="pyear"/><br>
+    </form>
+    <button id="but_upload" type="button" onclick="Upload()">Upload</button>
+    <br>
+    
+    <label>Enter the current Price</label>
+    <input type="number" price="Cprice" id="Cprice"><br/>
+    
+    <button type="button" value="Submit" onclick ="my_function()">Submit</button></br>
+    Current price is: <span id="result"></span></br>
+
+
+<div>
+<table id="example" class="display" cellspacing="0" width="100%"></table>
+</div>
+
+</body>
+</html>
+
+<script type="text/javascript">
+
+    var array_data = []
+
+    // Get CSRF Token
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(',');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function sendData(cdata){
+        var csrftoken = getCookie('csrftoken');
+        //console.log(cadta)
+
+        $.ajax({ 
+            //headers: { "Authorization": 'Token '+ token },
+            url: "http://127.0.0.1:8000/upload_csv/", 
+            type: 'POST',
+            headers: {
+                "X-CSRFToken":csrftoken,
+            },                
+            data: {'cdata' :cdata}, 
+            // contentType: false, 
+            // processData: false, 
+            success: function(response){ 
+                //console.log(response)
+                obj =  JSON.parse(response);
+                
+                array_data = (obj.date1)
+                // var i =0;
+                // for(i = 0;i<)
+                console.log(array_data.length)
+                //console.log("array",array_data)
+                if(response != 0){ 
+                    alert('file uploaded'); 
+                } 
+                else{ 
+                    alert('file not uploaded'); 
+                } 
+
+            $(document).ready(function() {
+            $('#example').DataTable( {
+            data: array_data,
+            "dom": 'lBfrtip',
+            stateSave: true,
+            columns: [
+            { title: "Date" },
+            { title: "Hour" },
+            { title: "Price" },
+           
+                ],
+
+            buttons: [
+                
+                'excelHtml5',
+                'csvHtml5'
+            ]
+
+            } );
+            } );
+
+            }, 
+        }); 
+    }
+        
+    function Upload() {
+        var fileUpload = document.getElementById("fileUpload");
+        var fyear = document.getElementById("Year_to_be_forward");
+        var pyear = document.getElementById("pyear");
+        var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.csv|.txt)$/;
+        var row = [];
+        var toatal_rows = []
+        if (regex.test(fileUpload.value.toLowerCase())) {
+            if (typeof (FileReader) != "undefined") {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    // var table = document.createElement("table");
+                    var rows = e.target.result.split("\n");
+                    for(var i=0;i<rows.length;i++){
+                        var temp = rows[i].split(",");
+                        for(j=0;j<temp.length;j++){
+                            //console.log(temp[j]);
+                            var cell = temp[j];
+                            row.push(cell);
+
+                        }
+                        toatal_rows.push(row);
+                        row = [];
+                    }
+                    //console.log("total_rows :", toatal_rows);
+                   
+                    sendData(toatal_rows);
+                    //sendData(fyear);
+                    //sendData(pyear);
+
+                }
+                reader.readAsText(fileUpload.files[0]);
+            }else {
+                alert("This browser does not support HTML5.");
+            }
+        }else {
+            alert("Please upload a valid CSV file.");
+        }
+    }
+    function my_function(){
+        
+        document.getElementById("result").innerHTML= document.getElementById("Cprice").value;
+        
+    }
+   
+   
+</script>   
